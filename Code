@@ -1,0 +1,80 @@
+#include <Adafruit_Fingerprint.h>  
+#include <LiquidCrystal.h>  
+#include <SoftwareSerial.h>  
+SoftwareSerialfingerSerial(10,11);  
+//RX,TXAdafruit_Fingerprintfinger(&fingerSerial); 
+// LCD Pins: RS, E, D4, D5, D6, D7 
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12); 
+// Buttons and Buzzer  
+const int party1 = 2;  
+const int party2 = 3;  
+const int party3 = 4;  
+const int buzzer = 5; 
+// Vote storage (for demo purposes, using variables) 
+bool votedUsers[128] = {false};  
+// Assuming max 127 users  
+int voteCount[3] = {0, 0, 0}; 
+void setup() { 
+pinMode(party1, INPUT_PULLUP);  
+pinMode(party2, INPUT_PULLUP); 
+pinMode(party3, INPUT_PULLUP);  
+pinMode(buzzer, OUTPUT); 
+lcd.begin(16, 2);  
+finger.begin(57600); 
+lcd.print("Voting Machine");  
+delay(2000); 
+lcd.clear(); 
+} 
+void loop() {  
+lcd.setCursor(0, 0);  
+lcd.print("Place Finger...");  
+int id = getFingerprintID();  
+if (id == -1) { 
+lcd.clear();  
+lcd.print("Access Denied");  
+tone(buzzer, 1000, 500);  
+delay(2000); 
+lcd.clear();  
+return; 
+} 
+lcd.clear(); 
+if (votedUsers[id]) {  
+lcd.print("Already Voted");  
+tone(buzzer, 1000, 500);  
+delay(2000); 
+lcd.clear();  
+return; 
+}  
+lcd.print("Select Candidate");  
+while (true) { 
+if(digitalRead(party1) == LOW) {  
+voteCount[0]++; 
+break; 
+} 
+if (digitalRead(party2) == LOW) {  
+voteCount[1]++; 
+break; 
+} 
+if (digitalRead(party3) == LOW) {  
+voteCount[2]++; 
+break; 
+} 
+} 
+votedUsers[id] = true;  
+lcd.clear(); 
+lcd.print("Vote Recorded");  
+delay(2000); 
+lcd.clear(); 
+} 
+int getFingerprintID() {  
+finger.getImage(); 
+if (finger.image2Tz() != FINGERPRINT_OK) return -1; 
+if (finger.fingerSearch() != FINGERPRINT_OK) return -1;  
+return finger.fingerID; 
+} 
+ 
+ 
+ 
+ 
+ 
+ 
